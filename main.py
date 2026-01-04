@@ -29,7 +29,14 @@ from src.modelling import (
     summarise_model,
 )
 
+from src.modelling_visualisations import (
+    plot_scatter_with_fit,
+    plot_residuals_vs_fitted,
+    plot_coefficients,
+)
+
 EDA_DIR = "outputs/figures"
+FIG_DIR = "outputs/figures"
 
 START_YEAR = 2000
 END_YEAR = 2023
@@ -97,10 +104,43 @@ def main():
     growth_summary = summarise_model(growth_model)
     growth_summary.to_csv("outputs/tables/regression_growth_summary.csv", index=False)
 
-    print(vol_summary)
-    print(growth_summary)
+    # print(vol_summary)
+    # print(growth_summary)
 
     df.to_csv("data/processed/panel.csv", index=False)
+
+    # 1) Scatter + fit: CO2 vs volatility (controls held at mean)
+    plot_scatter_with_fit(
+        country_df,
+        x="avg_co2_per_capita",
+        y="gdp_growth_volatility",
+        model=vol_model,
+        output_path=f"{FIG_DIR}/model_scatter_co2_vs_volatility.png",
+        title="CO₂ Exposure vs GDP Growth Volatility (Country-level)",
+        x_label="Average CO₂ per capita (tonnes per person)",
+        y_label="GDP growth volatility (std dev of growth rate)",
+    )
+
+# 2) Residual diagnostics (optional but strong)
+    plot_residuals_vs_fitted(
+        vol_model,
+        output_path=f"{FIG_DIR}/model_residuals_volatility.png",
+        title="Residuals vs Fitted Values (Volatility Model)",
+    )
+
+# 3) Coefficient plot for volatility model
+    plot_coefficients(
+        vol_summary,
+        output_path=f"{FIG_DIR}/model_coefficients_volatility.png",
+        title="Regression Coefficients (Volatility Model)",
+    )
+
+# (Optional) also visualise the growth model coefficients
+    plot_coefficients(
+        growth_summary,
+        output_path=f"{FIG_DIR}/model_coefficients_growth.png",
+        title="Regression Coefficients (Growth Model)",
+    )
 
 if __name__ == "__main__":
     main()
