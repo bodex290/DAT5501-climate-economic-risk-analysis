@@ -15,6 +15,21 @@ from src.feature_engineering import (
     summarise_country_metrics,
 )
 
+from src.exploratory_analysis import (
+    plot_global_trends,
+    plot_scatter_co2_vs_gdp,
+    plot_volatility_by_emission_group,
+    plot_country_trajectories
+)
+
+from src.modelling import (
+    compute_country_level_dataset,
+    run_correlations,
+    run_regression,
+    summarise_model,
+)
+
+EDA_DIR = "outputs/figures"
 
 START_YEAR = 2000
 END_YEAR = 2023
@@ -41,16 +56,51 @@ def main():
     df = add_emission_groups(df, n_groups=3)
 
     # Save feature table
-    df.to_csv("data/processed/panel_features.csv", index=False)
+    # df.to_csv("data/processed/panel_features.csv", index=False)
 
     # Country-level summary for modelling
     country_summary = summarise_country_metrics(df)
     country_summary.to_csv("data/processed/country_summary.csv", index=False)
 
+    # Exploratory Data Analysis
+    plot_global_trends(df, EDA_DIR)
+    plot_scatter_co2_vs_gdp(df, EDA_DIR)
+    plot_volatility_by_emission_group(df, EDA_DIR)
+    plot_country_trajectories(df, ["USA", "CHN"], EDA_DIR)
+
     print(df[["country","iso_code","year","gdp_pc_growth","co2_pc_rolling_5y","gdp_growth_volatility_5y","baseline_gdp_pc","emission_group"]].head(12))
     print(country_summary.head())
 
-    # df.to_csv("data/processed/panel.csv", index=False)
+    # Country-level dataset for modelling
+    country_df = compute_country_level_dataset(df)
+    country_df.to_csv("data/processed/country_level_model_dataset.csv", index=False)
+
+    # Correlation analysis
+    corr_df = run_correlations(country_df)
+    corr_df.to_csv("outputs/tables/correlations.csv", index=False)
+
+    # Regression 1: volatility
+    vol_model = run_regression(
+        country_df,
+        y_col="gdp_growth_volatility",
+        x_cols=["avg_co2_per_capita", "baseline_gdp_pc"],   
+    )
+    vol_summary = summarise_model(vol_model)
+    vol_summary.to_csv("outputs/tables/regression_volatility_summary.csv", index=False)
+
+    # Regression 2: mean growth
+    growth_model = run_regression(
+        country_df,
+        y_col="mean_gdp_growth",
+        x_cols=["avg_co2_per_capita", "baseline_gdp_pc"],
+    )
+    growth_summary = summarise_model(growth_model)
+    growth_summary.to_csv("outputs/tables/regression_growth_summary.csv", index=False)
+
+    print(vol_summary)
+    print(growth_summary)
+
+    df.to_csv("data/processed/panel.csv", index=False)
 
 if __name__ == "__main__":
     main()
