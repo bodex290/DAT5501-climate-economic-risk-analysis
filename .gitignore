@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+
+# Future large data (keep current files committed)
+data/raw/*.csv
+
+!data/raw/owid_co2.csv
+!data/raw/owid_gdp_per_capita.csv
