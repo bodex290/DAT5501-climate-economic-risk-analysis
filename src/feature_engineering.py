@@ -60,7 +60,7 @@ def add_baseline_gdp(df: pd.DataFrame, baseline_year: int = 2000) -> pd.DataFram
 def add_emission_groups(df: pd.DataFrame, n_groups: int = 3) -> pd.DataFrame:
     """
     Assign emission group labels based on average CO2 per capita per country.
-    Default: tertiles -> low/mid/high.
+    If there are fewer unique countries than groups, assign a single group.
     """
     out = df.copy()
 
@@ -70,24 +70,23 @@ def add_emission_groups(df: pd.DataFrame, n_groups: int = 3) -> pd.DataFrame:
         .rename(columns={"co2_per_capita": "avg_co2_per_capita"})
     )
 
-    if n_groups == 3:
-        labels = ["low", "mid", "high"]
+    # If too few countries to form quantiles, assign all to 'mid'
+    if country_avg.shape[0] < n_groups:
+        country_avg["emission_group"] = "mid"
     else:
-        labels = [f"g{i+1}" for i in range(n_groups)]
-
-    # qcut may fail if there are too many ties; handle that gracefully.
-    try:
+        labels = ["low", "mid", "high"] if n_groups == 3 else [f"g{i+1}" for i in range(n_groups)]
         country_avg["emission_group"] = pd.qcut(
             country_avg["avg_co2_per_capita"],
             q=n_groups,
-            labels=labels
+            labels=labels,
+            duplicates="drop",
         )
-    except ValueError:
-        # Fallback: rank then cut
-        ranks = country_avg["avg_co2_per_capita"].rank(method="average")
-        country_avg["emission_group"] = pd.qcut(ranks, q=n_groups, labels=labels)
 
-    out = out.merge(country_avg[["iso_code", "emission_group"]], on="iso_code", how="left")
+    out = out.merge(
+        country_avg[["iso_code", "emission_group"]],
+        on="iso_code",
+        how="left"
+    )
     return out
 
 
