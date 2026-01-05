@@ -35,7 +35,7 @@ def retain_countries_with_min_years(df: pd.DataFrame, min_years: int) -> pd.Data
 
 def merge_datasets(co2_df: pd.DataFrame, gdp_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Merge CO₂ and GDP datasets on iso_code and year.
+    Merge CO2 and GDP datasets on iso_code and year.
     """
     df = pd.merge(
         co2_df,

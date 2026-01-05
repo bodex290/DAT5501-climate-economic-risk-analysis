@@ -8,6 +8,7 @@ This project investigates the relationship between **per-capita CO₂ emissions*
 
 ## Research question and hypothesis
 
+
 **Research question:**  
 How are long-run CO₂ emissions per capita associated with economic performance and stability across countries?
 
@@ -24,7 +25,7 @@ Two CSV datasets are used (placed in `data/raw/`):
 
 ## Repository structure
 
-```text
+```
 .
 ├── main.py
 ├── requirements.txt
@@ -51,4 +52,29 @@ Two CSV datasets are used (placed in `data/raw/`):
     ├── test_data_cleaning.py
     ├── test_feature_engineering.py
     ├── test_models.py
-    └── test_modelling_visualisations.py
+    └── test_modelling_visualisations.py 
+
+```
+
+## Methods overview
+
+- Data loading & cleaning: standardises schemas, aligns time coverage, and merges datasets on country and year.
+- Feature engineering: GDP per capita growth, rolling CO₂ exposure, rolling GDP growth volatility, baseline GDP control, and emission group classification.
+- Exploratory analysis: trend plots and relationship plots saved to outputs/figures/.
+- Modelling: country-level correlations and OLS regressions examining associations between emissions, growth, and volatility.
+
+## Outputs
+- Processed datasets: cleaned and feature-engineered CSVs in data/processed/.
+- Figures: EDA and modelling plots in outputs/figures/.
+- Tables: correlation and regression summaries in outputs/tables/.
+
+## Reproducibility
+- Dependencies are declared in requirements.txt.
+- Core functionality is covered by unit tests in tests/.
+- Continuous Integration runs tests automatically to ensure consistency.
+
+## Notes and limitations
+- The analysis is observational and does not establish causality.
+- Country-level aggregation masks within-country dynamics.
+- Rolling-window features reduce usable observations in early years.
+- Structural and institutional factors may explain outliers not captured by the model.
